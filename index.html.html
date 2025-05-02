@@ -6,8 +6,8 @@
   <style>
     body {
       margin: 0;
-      background-color: black;
       overflow: hidden;
+      background-color: black;
     }
     html, body, canvas {
       width: 100%;
@@ -23,10 +23,10 @@
 
   <script>
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(0x000000); // Fond noir
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.5, 3);
+    camera.position.set(0, 2, 5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,31 +35,32 @@
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enablePan = false;
-    controls.minDistance = 1.5;
-    controls.maxDistance = 5;
+    controls.minDistance = 1;
+    controls.maxDistance = 10;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    // 💡 Lumières fortes
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-    scene.add(ambientLight);
+    // Lumières puissantes
+    const ambient = new THREE.AmbientLight(0xffffff, 2);
+    scene.add(ambient);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-    directionalLight.position.set(3, 3, 3);
-    scene.add(directionalLight);
+    const directional = new THREE.DirectionalLight(0xffffff, 2);
+    directional.position.set(5, 5, 5);
+    scene.add(directional);
 
-    const pointLight = new THREE.PointLight(0xffffff, 2, 100);
-    pointLight.position.set(-2, 2, 2);
-    scene.add(pointLight);
+    const point = new THREE.PointLight(0xffffff, 3, 100);
+    point.position.set(-3, 3, 2);
+    scene.add(point);
 
-    // 🔄 Chargement du modèle
+    // Chargement du modèle
     const loader = new THREE.GLTFLoader();
     loader.load('untitled.glb', function(gltf) {
       const model = gltf.scene;
-      model.scale.set(1, 1, 1); // ajuste ici si invisible (ex. 0.1, 10...)
+      model.scale.set(10, 10, 10); // Grossit fortement
       model.position.set(0, 0, 0);
+      model.rotation.set(0, 0, 0);
       scene.add(model);
-      console.log('✅ Modèle chargé');
+      console.log('✅ Modèle chargé avec succès');
     }, undefined, function(error) {
       console.error('❌ Erreur de chargement du modèle :', error);
     });
