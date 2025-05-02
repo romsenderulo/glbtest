@@ -4,8 +4,16 @@
   <meta charset="UTF-8" />
   <title>3D Viewer</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    html, body, canvas { width: 100%; height: 100%; display: block; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black; /* 🔲 fond noir assuré */
+    }
+    html, body, canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -15,24 +23,23 @@
 
   <script>
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000); // 🔲 fond noir
+    scene.background = new THREE.Color(0x000000); // 🟦 fond noir
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 1, 3);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ antialias: true }); // pas de alpha !
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     document.body.appendChild(renderer.domElement);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enablePan = false;              // 🚫 pas de déplacement latéral
-    controls.minDistance = 1.5;              // 🔍 zoom minimum
-    controls.maxDistance = 5;                // 🔎 zoom maximum
+    controls.minDistance = 1.5;
+    controls.maxDistance = 5;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    // 💡 Lumières
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
@@ -40,7 +47,6 @@
     directionalLight.position.set(2, 2, 2);
     scene.add(directionalLight);
 
-    // 📦 Chargement du modèle
     const loader = new THREE.GLTFLoader();
     loader.load('untitled.glb', function(gltf) {
       console.log('✅ Modèle chargé');
@@ -49,7 +55,6 @@
       console.error('❌ Erreur de chargement du modèle :', error);
     });
 
-    // 🌀 Boucle d'animation
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
@@ -58,7 +63,6 @@
 
     animate();
 
-    // 🔁 Responsive
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
