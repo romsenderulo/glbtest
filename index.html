@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Viewer</title>
+  <title>GLB Viewer</title>
   <style>
     body {
       margin: 0;
@@ -38,6 +38,7 @@
     controls.maxDistance = 10;
     controls.dampingFactor = 0.05;
 
+    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambient);
 
@@ -45,16 +46,17 @@
     directional.position.set(3, 3, 3);
     scene.add(directional);
 
+    // Load GLB model
     const loader = new THREE.GLTFLoader();
     loader.load('untitled.glb', function (gltf) {
       const model = gltf.scene;
 
-      // 🔧 Centrage automatique
+      // Auto-center and scale
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
       model.position.sub(center);
-
       model.scale.set(1.5, 1.5, 1.5);
+
       scene.add(model);
       console.log("✅ Modèle chargé");
     }, undefined, function (error) {
