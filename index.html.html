@@ -2,82 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Viewer</title>
+  <title>GLB Force Viewer</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      background: black;
       overflow: hidden;
-      background-color: black;
     }
-    html, body, canvas {
-      width: 100%;
-      height: 100%;
+    canvas {
       display: block;
     }
   </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
-  <script>
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000); // Fond noir
+<script>
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 2, 5);
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 2, 5);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.enablePan = false;
+  controls.minDistance = 1;
+  controls.maxDistance = 10;
+
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+  scene.add(light);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+  dirLight.position.set(2, 2, 2);
+  scene.add(dirLight);
+
+  const loader = new THREE.GLTFLoader();
+  loader.load('untitled.glb', function(gltf) {
+    const model = gltf.scene;
+
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.material.side = THREE.DoubleSide;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+
+    // Auto-center
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center); // recentre l'objet
+
+    model.scale.set(5, 5, 5); // applique une échelle safe
+    scene.add(model);
+    console.log("✅ Modèle chargé et affiché");
+  }, undefined, function(err) {
+    console.error("❌ Erreur de chargement du modèle :", err);
+    // Affiche un cube pour debug
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    console.log("🟥 Cube de debug affiché à la place");
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enablePan = false;
-    controls.minDistance = 1;
-    controls.maxDistance = 10;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // Lumières puissantes
-    const ambient = new THREE.AmbientLight(0xffffff, 2);
-    scene.add(ambient);
-
-    const directional = new THREE.DirectionalLight(0xffffff, 2);
-    directional.position.set(5, 5, 5);
-    scene.add(directional);
-
-    const point = new THREE.PointLight(0xffffff, 3, 100);
-    point.position.set(-3, 3, 2);
-    scene.add(point);
-
-    // Chargement du modèle
-    const loader = new THREE.GLTFLoader();
-    loader.load('untitled.glb', function(gltf) {
-      const model = gltf.scene;
-      model.scale.set(10, 10, 10); // Grossit fortement
-      model.position.set(0, 0, 0);
-      model.rotation.set(0, 0, 0);
-      scene.add(model);
-      console.log('✅ Modèle chargé avec succès');
-    }, undefined, function(error) {
-      console.error('❌ Erreur de chargement du modèle :', error);
-    });
-
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
