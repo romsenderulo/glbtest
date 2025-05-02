@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GLB Force Viewer</title>
+  <title>3D Viewer</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      background: black;
+      background-color: black;
       overflow: hidden;
     }
     canvas {
@@ -15,76 +15,65 @@
   </style>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
-<script>
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
 
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
-  camera.position.set(0, 2, 5);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.5, 3);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.enablePan = false;
-  controls.minDistance = 1;
-  controls.maxDistance = 10;
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 1;
+    controls.maxDistance = 10;
+    controls.dampingFactor = 0.05;
 
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
-  scene.add(light);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-  dirLight.position.set(2, 2, 2);
-  scene.add(dirLight);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.5);
+    scene.add(ambient);
 
-  const loader = new THREE.GLTFLoader();
-  loader.load('untitled.glb', function(gltf) {
-    const model = gltf.scene;
+    const directional = new THREE.DirectionalLight(0xffffff, 2);
+    directional.position.set(3, 3, 3);
+    scene.add(directional);
 
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.material.side = THREE.DoubleSide;
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
+    const loader = new THREE.GLTFLoader();
+    loader.load('untitled.glb', function (gltf) {
+      const model = gltf.scene;
+
+      // 🔧 Centrage automatique
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+
+      model.scale.set(1.5, 1.5, 1.5);
+      scene.add(model);
+      console.log("✅ Modèle chargé");
+    }, undefined, function (error) {
+      console.error('❌ Erreur chargement modèle :', error);
     });
 
-    // Auto-center
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    model.position.sub(center); // recentre l'objet
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
 
-    model.scale.set(5, 5, 5); // applique une échelle safe
-    scene.add(model);
-    console.log("✅ Modèle chargé et affiché");
-  }, undefined, function(err) {
-    console.error("❌ Erreur de chargement du modèle :", err);
-    // Affiche un cube pour debug
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    console.log("🟥 Cube de debug affiché à la place");
-  });
+    animate();
 
-  function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-  }
-
-  animate();
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-</script>
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
